@@ -9,25 +9,33 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
+    public static String KEY_TEMPNAME = "KEY_TEMPNAME";
     public static String  KEY_EXTRA_MINUTES = "KEY_EXTRA_MINUTES";
-    public static String KEY_BDROADCAST = "com.ratiug.dev.pomodorojustdoit";
+    public static String KEY_BDROADCAST = "com.ratiug.dev.pomodorojustdoit_tick";
+    public static String KEY_BDROADCAST_FINISH_TIMER = "com.ratiug.dev.pomodorojustdoit_finish_timer";
+
     private static final String TAG = "DBG | MainActivity | ";
     //
     int minutesForTimer = 1;
-    int timeLeft;
+    String timeLeft;
     //
     ServiceConnection mServiceConn;
     TimerService myTimerService;
     Boolean bound = false;
     Intent mIntent;
-    BroadcastReceiver broadcastReceiver;
+    BroadcastReceiver broadcastReceiverTick;
+    BroadcastReceiver finishTimer;
     //
     private TextView tvText;
+    private Button startButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,24 +43,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         tvText = findViewById(R.id.tvTimer);
+        startButton = findViewById(R.id.btnStart);
 
         mIntent = new Intent(this,TimerService.class).putExtra(KEY_EXTRA_MINUTES,minutesForTimer);
 
-        broadcastReceiver = new BroadcastReceiver() {
+        broadcastReceiverTick = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-              //  timeLeft = myTimerService.getTimeLeft();
-                //Log.d(TAG, "onReceive B_R_O_A_D_");
-//                tvText.setText(myTimerService.getTimeLeft());
-                timeLeft = myTimerService.getTimeLeft() / 1000;
-                Log.d(TAG, "onReceive: " + timeLeft);
-               tvText.setText(String.valueOf(timeLeft));
-
+                timeLeft = intent.getStringExtra(KEY_TEMPNAME);
+                tvText.setText(timeLeft);
             }
         };
 
-        IntentFilter intentFilter = new IntentFilter(KEY_BDROADCAST);
-        registerReceiver(broadcastReceiver,intentFilter);
+        finishTimer = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Toast.makeText(getApplicationContext(),"Complete",Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        registerReceiver(finishTimer,new IntentFilter(KEY_BDROADCAST_FINISH_TIMER));
 
         mServiceConn = new ServiceConnection() {
             @Override
@@ -68,8 +78,36 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "onServiceDisconnected");
             }
         };
-        startTimer();
 
+        startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startTimer();
+            }
+        });
+
+
+
+
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume: ");
+       registerReceiver(broadcastReceiverTick,new IntentFilter(KEY_BDROADCAST));
+        super.onResume();
     }
 
     private void startTimer() {

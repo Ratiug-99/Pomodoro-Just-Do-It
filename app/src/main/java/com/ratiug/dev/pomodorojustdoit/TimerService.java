@@ -3,6 +3,7 @@ package com.ratiug.dev.pomodorojustdoit;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -19,6 +20,8 @@ public class TimerService extends Service {
     TimerTask timerTask;
     Timer timer = new Timer();
     int timeLeft;
+    String tempStr;
+    Boolean runTimer = false;
 
     @Override
     public void onCreate() {
@@ -30,9 +33,6 @@ public class TimerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
-
-        minutesForTimer = intent.getIntExtra(MainActivity.KEY_EXTRA_MINUTES, minutesForTimer);
-        mlls = minutesToMilliseconds(minutesForTimer);
 
         return mBinder;
     }
@@ -52,21 +52,24 @@ public class TimerService extends Service {
 
     void start() {
         Log.d(TAG, "start ");
+        if (!runTimer) {
+            new CountDownTimer(30000, 1000) {
 
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(MainActivity.KEY_BDROADCAST);
-                //    Log.d(TAG, "run: " + mlls / 1000);
-                mlls = mlls - 1000;
-
-                if (mlls == 0) {
-                    timerTask.cancel();
+                public void onTick(long millisUntilFinished) {
+                    Log.d(TAG, "onTick: " + millisUntilFinished / 1000);
+                    //here you can have your logic to set text to edittext
+                    tempStr = String.valueOf(millisUntilFinished / 1000);
+                    sendBroadcast(new Intent(MainActivity.KEY_BDROADCAST).putExtra(MainActivity.KEY_TEMPNAME, tempStr));
+                    runTimer = true;
                 }
-                sendBroadcast(intent);
-            }
-        };
-        timer.schedule(timerTask, 1000, 1000);
+
+                public void onFinish() {
+                    Log.d(TAG, "onFinish: DONE");
+                    sendBroadcast(new Intent(MainActivity.KEY_BDROADCAST_FINISH_TIMER));
+                    runTimer = false;
+                }
+            }.start();
+        }
     }
 
     private int minutesToMilliseconds(int minutesForTimer) {
