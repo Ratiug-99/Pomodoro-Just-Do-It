@@ -12,8 +12,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class TimerService extends Service {
+    private static final String TAG = "DBG | TimerService | ";
     MyBinder mBinder = new MyBinder();
     int minutesForTimer;
+    int mlls;
     TimerTask timerTask;
     Timer timer = new Timer();
     int timeLeft;
@@ -24,12 +26,14 @@ public class TimerService extends Service {
         super.onCreate();
     }
 
-    private static final String TAG = "DBG | TimerService | ";
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
-        minutesForTimer = intent.getIntExtra(MainActivity.KEY_EXTRA_MINUTES,minutesForTimer);
+
+        minutesForTimer = intent.getIntExtra(MainActivity.KEY_EXTRA_MINUTES, minutesForTimer);
+        mlls = minutesToMilliseconds(minutesForTimer);
+
         return mBinder;
     }
 
@@ -46,30 +50,35 @@ public class TimerService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    void start(){
+    void start() {
         Log.d(TAG, "start ");
 
         timerTask = new TimerTask() {
             @Override
             public void run() {
                 Intent intent = new Intent(MainActivity.KEY_BDROADCAST);
-                Log.d(TAG, "run: BROADCAST");
+                //    Log.d(TAG, "run: " + mlls / 1000);
+                mlls = mlls - 1000;
+
+                if (mlls == 0) {
+                    timerTask.cancel();
+                }
                 sendBroadcast(intent);
             }
         };
-        timer.schedule(timerTask,1000,200);
+        timer.schedule(timerTask, 1000, 1000);
     }
 
-    private int minutesToMilliseconds(int minutesForTimer){
-        return minutesForTimer * 6000;
+    private int minutesToMilliseconds(int minutesForTimer) {
+        return minutesForTimer * 60000;
     }
 
-    public int getTimeLeft(){
-        return timeLeft;
+    public int getTimeLeft() {
+        return mlls;
     }
 
     class MyBinder extends Binder {
-        TimerService getService(){
+        TimerService getService() {
             Log.d(TAG, "getService");
             return TimerService.this;
         }
