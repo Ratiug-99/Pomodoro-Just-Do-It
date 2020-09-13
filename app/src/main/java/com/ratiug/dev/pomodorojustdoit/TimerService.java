@@ -16,11 +16,11 @@ public class TimerService extends Service {
     private static final String TAG = "DBG | TimerService | ";
     MyBinder mBinder = new MyBinder();
     int minutesForTimer;
-    int mlls;
+    long mlls;
     TimerTask timerTask;
     Timer timer = new Timer();
     int timeLeft;
-    String tempStr;
+    long tempStr;
     Boolean runTimer = false;
 
     @Override
@@ -58,7 +58,7 @@ public class TimerService extends Service {
                 public void onTick(long millisUntilFinished) {
                     Log.d(TAG, "onTick: " + millisUntilFinished / 1000);
                     //here you can have your logic to set text to edittext
-                    tempStr = String.valueOf(millisUntilFinished / 1000);
+                    tempStr = (millisUntilFinished);
                     sendBroadcast(new Intent(MainActivity.KEY_BDROADCAST).putExtra(MainActivity.KEY_TEMPNAME, tempStr));
                     runTimer = true;
                 }
@@ -76,7 +76,7 @@ public class TimerService extends Service {
         return minutesForTimer * 60000;
     }
 
-    public int getTimeLeft() {
+    public long getTimeLeft() {
         return mlls;
     }
 

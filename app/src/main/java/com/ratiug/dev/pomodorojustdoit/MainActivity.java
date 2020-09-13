@@ -16,6 +16,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 public class MainActivity extends AppCompatActivity {
     public static String KEY_TEMPNAME = "KEY_TEMPNAME";
     public static String  KEY_EXTRA_MINUTES = "KEY_EXTRA_MINUTES";
@@ -24,9 +30,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "DBG | MainActivity | ";
     //
-    int minutesForTimer = 1;
-    String timeLeft;
+    int minutesForTimer = 25;
+    long timeLeft;
     //
+    DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss", Locale.UK);
     ServiceConnection mServiceConn;
     TimerService myTimerService;
     Boolean bound = false;
@@ -41,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         tvText = findViewById(R.id.tvTimer);
         startButton = findViewById(R.id.btnStart);
 
@@ -50,8 +57,12 @@ public class MainActivity extends AppCompatActivity {
         broadcastReceiverTick = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                timeLeft = intent.getStringExtra(KEY_TEMPNAME);
-                tvText.setText(timeLeft);
+                timeLeft = intent.getLongExtra(KEY_TEMPNAME,0);
+                Date date = new Date(timeLeft);
+                SimpleDateFormat formatter= new SimpleDateFormat("mm:ss");
+                formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+                String formatted = formatter.format(date );
+                tvText.setText(formatted);
             }
         };
 
