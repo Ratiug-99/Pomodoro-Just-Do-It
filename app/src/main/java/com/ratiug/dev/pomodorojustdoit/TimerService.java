@@ -33,7 +33,7 @@ public class TimerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
-
+        minutesForTimer = intent.getIntExtra(MainActivity.KEY_EXTRA_MINUTES,0);
         return mBinder;
     }
 
@@ -53,8 +53,7 @@ public class TimerService extends Service {
     void start() {
         Log.d(TAG, "start ");
         if (!runTimer) {
-            new CountDownTimer(30000, 1000) {
-
+            new CountDownTimer(minutesToMilliseconds(minutesForTimer), 1000) {
                 public void onTick(long millisUntilFinished) {
                     Log.d(TAG, "onTick: " + millisUntilFinished / 1000);
                     //here you can have your logic to set text to edittext
@@ -64,6 +63,7 @@ public class TimerService extends Service {
                 }
 
                 public void onFinish() {
+                    Log.d(TAG, "onFinish: " + minutesForTimer);
                     Log.d(TAG, "onFinish: DONE");
                     sendBroadcast(new Intent(MainActivity.KEY_BDROADCAST_FINISH_TIMER));
                     runTimer = false;
