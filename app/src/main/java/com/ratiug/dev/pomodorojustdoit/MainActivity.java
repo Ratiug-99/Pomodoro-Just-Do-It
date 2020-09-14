@@ -8,12 +8,14 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.DateFormat;
@@ -25,6 +27,7 @@ import java.util.TimeZone;
 public class MainActivity extends AppCompatActivity {
     public static String KEY_TEMPNAME = "KEY_TEMPNAME";
     public static String  KEY_EXTRA_MINUTES = "KEY_EXTRA_MINUTES";
+    public static String  KEY_SAVE_STATE_TIMER_TIME = "KEY_SAVE_STATE_TIMER_TIME";
     public static String KEY_BDROADCAST = "com.ratiug.dev.pomodorojustdoit_tick";
     public static String KEY_BDROADCAST_FINISH_TIMER = "com.ratiug.dev.pomodorojustdoit_finish_timer";
 
@@ -96,22 +99,18 @@ public class MainActivity extends AppCompatActivity {
                 startTimer();
             }
         });
-
-
-
-
     }
 
     @Override
-    protected void onPause() {
-        Log.d(TAG, "onPause");
-        super.onPause();
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString(KEY_SAVE_STATE_TIMER_TIME, tvText.getText().toString());
+        super.onSaveInstanceState(outState);
     }
 
     @Override
-    protected void onDestroy() {
-        Log.d(TAG, "onDestroy");
-        super.onDestroy();
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        tvText.setText(savedInstanceState.getString(KEY_SAVE_STATE_TIMER_TIME));
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override

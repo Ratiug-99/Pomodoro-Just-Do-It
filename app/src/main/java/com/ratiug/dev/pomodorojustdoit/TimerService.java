@@ -53,7 +53,7 @@ public class TimerService extends Service {
     void start() {
         Log.d(TAG, "start ");
         if (!runTimer) {
-            new CountDownTimer(minutesToMilliseconds(minutesForTimer), 1000) {
+            new CountDownTimer(15000, 1000) { //inutesToMilliseconds(minutesForTimer)
                 public void onTick(long millisUntilFinished) {
                     Log.d(TAG, "onTick: " + millisUntilFinished / 1000);
                     //here you can have your logic to set text to edittext
