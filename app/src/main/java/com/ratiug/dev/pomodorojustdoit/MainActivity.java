@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PersistableBundle;
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     //
     int minutesForTimer = 25;
     long timeLeft;
+    MediaPlayer mPlayer;
     //
     DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss", Locale.UK);
     ServiceConnection mServiceConn;
@@ -72,6 +74,14 @@ public class MainActivity extends AppCompatActivity {
         finishTimer = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                mPlayer= MediaPlayer.create(getApplicationContext(), R.raw.music);  //todo: change sound
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mPlayer.stop();
+                    }
+                });
+                mPlayer.start();
                 Toast.makeText(getApplicationContext(),"Complete",Toast.LENGTH_SHORT).show();
             }
         };
