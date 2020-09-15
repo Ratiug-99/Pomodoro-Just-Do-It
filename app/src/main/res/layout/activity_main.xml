@@ -17,11 +17,23 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
+        android:id="@+id/btnStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/btnStart"
-        app:layout_constraintTop_toTopOf="@id/tvTimer"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@id/tvTimer"/>
+        app:layout_constraintStart_toStartOf="@id/tvTimer"
+        app:layout_constraintTop_toTopOf="@id/tvTimer" />
+
+    <Button
+
+        android:id="@+id/tempbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/tvTimer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="temptext" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
