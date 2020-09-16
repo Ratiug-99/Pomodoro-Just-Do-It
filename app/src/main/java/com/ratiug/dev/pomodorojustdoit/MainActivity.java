@@ -1,6 +1,5 @@
 package com.ratiug.dev.pomodorojustdoit;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -23,7 +22,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -33,79 +31,61 @@ import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "DBG | MainActivity | ";
-    public static String KEY_TEMPNAME = "KEY_TEMPNAME";
-    public static String KEY_EXTRA_MINUTES = "KEY_EXTRA_MINUTES";
+    //KEY`s and ID`s
+    public static String KEY_MILLIS_UNTIL_FINISHED = "KEY_MILLIS_UNTIL_FINISHED"; //Variable key to transmit milliseconds to finish every tick
+    public static String KEY_PUT_MINUTES_TO_TIMER = "KEY_PUT_MINUTES_TO_TIMER"; //Minutes to start timer
     public static String KEY_SAVE_STATE_TIMER_TIME = "KEY_SAVE_STATE_TIMER_TIME";
-    public static String KEY_BDROADCAST = "com.ratiug.dev.pomodorojustdoit_tick";
+    public static String KEY_BDROADCAST_TICK = "com.ratiug.dev.pomodorojustdoit_tick";
     public static String KEY_BDROADCAST_FINISH_TIMER = "com.ratiug.dev.pomodorojustdoit_finish_timer";
-    private static String KEY_CHANNEL_TIMER = "KEY_CHANNEL_TIMER";
-    private static int ID_NOTIFY_TIMER = 0;
-
-    //////todo optimize code
-    int minutesForTimer = 25;
-    long timeLeft;
-    MediaPlayer mPlayer;
     //
-    DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss", Locale.UK);
+    long timeLeft;
+    //
+    DateFormat mDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.UK);
     ServiceConnection mServiceConn;
     TimerService myTimerService;
     Boolean bound = false;
     Intent mIntent;
-    BroadcastReceiver broadcastReceiverTick;
-    BroadcastReceiver finishTimer;
-    //
-    private TextView tvText;
-    private Button startButton;
+    BroadcastReceiver mBroadcastReceiverTick;
+    BroadcastReceiver mFinishTimer;
+    MediaPlayer mPlayer ;
+    //View
+    private TextView mTextViewTime;
+    private Button mStartTimerBtn;
     //temp var
     Button button;
-    //
+    int minutesForTimer = 25;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        tvText = findViewById(R.id.tvTimer);
+        mDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        mTextViewTime = findViewById(R.id.tvTimer);
         button = findViewById(R.id.tempbutton);
-        startButton = findViewById(R.id.btnStart);
-
-        mIntent = new Intent(this, TimerService.class).putExtra(KEY_EXTRA_MINUTES, minutesForTimer);
+        mStartTimerBtn = findViewById(R.id.btnStart);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                temp();
+                CreateNotificationConcentration();
             }
         });
 
-        broadcastReceiverTick = new BroadcastReceiver() {
+        mBroadcastReceiverTick = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) { //todo create method
-                timeLeft = intent.getLongExtra(KEY_TEMPNAME, 0);
-                Date date = new Date(timeLeft);
-                SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
-                formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-                String formatted = formatter.format(date);
-                tvText.setText(formatted);
+                updateTimeToFinish(intent);
             }
         };
 
-        finishTimer = new BroadcastReceiver() {
+        mFinishTimer = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) { //todo create method
-                mPlayer = MediaPlayer.create(getApplicationContext(), R.raw.music);  //todo: change sound
-                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        mPlayer.stop();
-                    }
-                });
-                mPlayer.start();
-                Toast.makeText(getApplicationContext(), "Complete", Toast.LENGTH_SHORT).show();
+                finishTimer();
             }
         };
 
-        registerReceiver(finishTimer, new IntentFilter(KEY_BDROADCAST_FINISH_TIMER));
+        registerReceiver(mFinishTimer, new IntentFilter(KEY_BDROADCAST_FINISH_TIMER));
 
         mServiceConn = new ServiceConnection() {
             @Override
@@ -122,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        startButton.setOnClickListener(new View.OnClickListener() {
+        mStartTimerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startTimer();
@@ -130,13 +110,36 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void temp() { // todo create normal function and updateinfo at tick
+    private void finishTimer() {
+        mPlayer = MediaPlayer.create(getApplicationContext(), R.raw.music);  //todo: change sound;
+        mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mPlayer.stop();
+            }
+        });
+        mPlayer.start();
+        Toast.makeText(getApplicationContext(), "Complete", Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateTimeToFinish(Intent intentFromBroadcast) {
+        timeLeft = intentFromBroadcast.getLongExtra(KEY_MILLIS_UNTIL_FINISHED, 0);
+        SimpleDateFormat formatter = new SimpleDateFormat("mm:ss", Locale.UK);
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date date = new Date(timeLeft);
+        String timeToFinish = formatter.format(date);
+        mTextViewTime.setText(timeToFinish);
+    }
+
+    private void CreateNotificationConcentration() { // todo create normal function and updateinfo at tick
         Log.d(TAG, "temp: ");
+        String KEY_CHANNEL_TIMER = "KEY_CHANNEL_TIMER";
+        CharSequence mTime = null;
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), KEY_CHANNEL_TIMER)
                 .setSmallIcon(R.drawable.ic_notifi_timer)
-                .setContentTitle("title")
-                .setContentText("content")
-                .setColor(Color.parseColor("#009add"))
+                .setContentTitle("Время концентрации")
+                .setContentText(mTime)
+//                .setColor(Color.parseColor("#009add"))
                 .setAutoCancel(true);
 
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(
@@ -148,36 +151,35 @@ public class MainActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(mChannel);
         }
 
-        notificationManager.notify(0, mBuilder.build());
+        int ID_NOTIFY_TIMER = 0;
+        notificationManager.notify(ID_NOTIFY_TIMER, mBuilder.build());
     }
 
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putString(KEY_SAVE_STATE_TIMER_TIME, tvText.getText().toString());
+        outState.putString(KEY_SAVE_STATE_TIMER_TIME, mTextViewTime.getText().toString());
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        tvText.setText(savedInstanceState.getString(KEY_SAVE_STATE_TIMER_TIME));
+        mTextViewTime.setText(savedInstanceState.getString(KEY_SAVE_STATE_TIMER_TIME));
         super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
     protected void onResume() {
         Log.d(TAG, "onResume: ");
-        registerReceiver(broadcastReceiverTick, new IntentFilter(KEY_BDROADCAST));
+        registerReceiver(mBroadcastReceiverTick, new IntentFilter(KEY_BDROADCAST_TICK));
         super.onResume();
     }
 
     private void startTimer() {
-
         Log.d(TAG, "startTimer");
+        mIntent = new Intent(this, TimerService.class).putExtra(KEY_PUT_MINUTES_TO_TIMER, minutesForTimer);
         bindService(mIntent, mServiceConn, 0);
         startService(mIntent);
-
-        
     }
 
 }

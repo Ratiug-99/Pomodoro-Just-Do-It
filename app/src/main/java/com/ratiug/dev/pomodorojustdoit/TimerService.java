@@ -33,7 +33,7 @@ public class TimerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
-        minutesForTimer = intent.getIntExtra(MainActivity.KEY_EXTRA_MINUTES,0);
+        minutesForTimer = intent.getIntExtra(MainActivity.KEY_PUT_MINUTES_TO_TIMER,0);
         return mBinder;
     }
 
@@ -58,7 +58,7 @@ public class TimerService extends Service {
                     Log.d(TAG, "onTick: " + millisUntilFinished / 1000);
                     //here you can have your logic to set text to edittext
                     tempStr = (millisUntilFinished);
-                    sendBroadcast(new Intent(MainActivity.KEY_BDROADCAST).putExtra(MainActivity.KEY_TEMPNAME, tempStr));
+                    sendBroadcast(new Intent(MainActivity.KEY_BDROADCAST_TICK).putExtra(MainActivity.KEY_MILLIS_UNTIL_FINISHED, tempStr));
                     runTimer = true;
                 }
 
