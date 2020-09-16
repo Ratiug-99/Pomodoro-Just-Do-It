@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                CreateNotificationConcentration();
+              //  CreateNotificationConcentration();
             }
         });
 
@@ -129,16 +129,16 @@ public class MainActivity extends AppCompatActivity {
         Date date = new Date(timeLeft);
         String timeToFinish = formatter.format(date);
         mTextViewTime.setText(timeToFinish);
+        CreateNotificationConcentration(timeToFinish);
     }
 
-    private void CreateNotificationConcentration() { // todo create normal function and updateinfo at tick
+    private void CreateNotificationConcentration(String time) { //
         Log.d(TAG, "temp: ");
         String KEY_CHANNEL_TIMER = "KEY_CHANNEL_TIMER";
-        CharSequence mTime = null;
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), KEY_CHANNEL_TIMER)
                 .setSmallIcon(R.drawable.ic_notifi_timer)
                 .setContentTitle("Время концентрации")
-                .setContentText(mTime)
+                .setContentText(time)
 //                .setColor(Color.parseColor("#009add"))
                 .setAutoCancel(true);
 
