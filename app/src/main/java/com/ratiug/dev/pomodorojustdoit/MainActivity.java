@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -61,26 +63,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         mTextViewTime = findViewById(R.id.tvTimer);
-        button = findViewById(R.id.tempbutton);
         mStartTimerBtn = findViewById(R.id.btnStart);
-
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-              //  CreateNotificationConcentration();
-            }
-        });
 
         mBroadcastReceiverTick = new BroadcastReceiver() {
             @Override
-            public void onReceive(Context context, Intent intent) { //todo create method
+            public void onReceive(Context context, Intent intent) {
                 updateTimeToFinish(intent);
             }
         };
 
         mFinishTimer = new BroadcastReceiver() {
             @Override
-            public void onReceive(Context context, Intent intent) { //todo create method
+            public void onReceive(Context context, Intent intent) {
                 finishTimer();
             }
         };
@@ -132,9 +126,10 @@ public class MainActivity extends AppCompatActivity {
         CreateNotificationConcentration(timeToFinish);
     }
 
-    private void CreateNotificationConcentration(String time) { //
+    private void CreateNotificationConcentration(String time) { //todo add onClickListener
         Log.d(TAG, "temp: ");
         String KEY_CHANNEL_TIMER = "KEY_CHANNEL_TIMER";
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notifi_timer);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), KEY_CHANNEL_TIMER)
                 .setSmallIcon(R.drawable.ic_notifi_timer)
                 .setContentTitle("Время концентрации")
