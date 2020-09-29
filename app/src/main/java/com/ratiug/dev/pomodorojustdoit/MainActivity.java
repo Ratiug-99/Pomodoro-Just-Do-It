@@ -1,5 +1,6 @@
 package com.ratiug.dev.pomodorojustdoit;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -54,11 +55,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTextViewTime;
     private Button mStartTimerBtn;
     //temp var
-    Button button;
     int minutesForTimer = 25;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         mBroadcastReceiverTick = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.d(TAG, "onReceive: TICK +");
                 updateTimeToFinish(intent);
             }
         };
@@ -75,11 +77,10 @@ public class MainActivity extends AppCompatActivity {
         mFinishTimer = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.d(TAG, "onReceive: FINISH + ");
                 finishTimer();
             }
         };
-
-        registerReceiver(mFinishTimer, new IntentFilter(KEY_BDROADCAST_FINISH_TIMER));
 
         mServiceConn = new ServiceConnection() {
             @Override
@@ -102,6 +103,17 @@ public class MainActivity extends AppCompatActivity {
                 startTimer();
             }
         });
+    }
+
+    private void RegisterReceiver() {
+        registerReceiver(mFinishTimer, new IntentFilter(KEY_BDROADCAST_FINISH_TIMER));
+        registerReceiver(mBroadcastReceiverTick, new IntentFilter(KEY_BDROADCAST_TICK));
+    }
+
+    private void UnRegisterReceiver() {
+            unregisterReceiver(mFinishTimer);
+            unregisterReceiver(mBroadcastReceiverTick);
+
     }
 
     private void finishTimer() {
@@ -127,13 +139,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void CreateNotificationConcentration(String time) { //todo add onClickListener
-        Log.d(TAG, "temp: ");
         String KEY_CHANNEL_TIMER = "KEY_CHANNEL_TIMER";
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_notifi_timer);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), KEY_CHANNEL_TIMER)
                 .setSmallIcon(R.drawable.ic_notifi_timer)
                 .setContentTitle("Время концентрации")
                 .setContentText(time)
+                .setVibrate(null)
 //                .setColor(Color.parseColor("#009add"))
                 .setAutoCancel(true);
 
@@ -141,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(KEY_CHANNEL_TIMER, KEY_CHANNEL_TIMER, NotificationManager.IMPORTANCE_HIGH);
+            NotificationChannel mChannel = new NotificationChannel(KEY_CHANNEL_TIMER, KEY_CHANNEL_TIMER, NotificationManager.IMPORTANCE_LOW);
 
             notificationManager.createNotificationChannel(mChannel);
         }
@@ -164,14 +175,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        Log.d(TAG, "onResume: ");
-        registerReceiver(mBroadcastReceiverTick, new IntentFilter(KEY_BDROADCAST_TICK));
-        super.onResume();
+    protected void onPause() {
+       // Log.d(TAG, "onPause: Unregister Receivers");
+     
+        super.onPause();
     }
 
     private void startTimer() {
         Log.d(TAG, "startTimer");
+        RegisterReceiver();
         mIntent = new Intent(this, TimerService.class).putExtra(KEY_PUT_MINUTES_TO_TIMER, minutesForTimer);
         bindService(mIntent, mServiceConn, 0);
         startService(mIntent);
