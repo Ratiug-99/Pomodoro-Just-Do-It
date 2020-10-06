@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void finishTimer() {
-        mPlayer = MediaPlayer.create(getApplicationContext(), R.raw.music);  //todo: change sound;
+        mPlayer = MediaPlayer.create(getApplicationContext(), R.raw.finish_work_timer);
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
