@@ -12,8 +12,8 @@ import androidx.annotation.Nullable;
 public class TimerService extends Service {
     private static final String TAG = "DBG | TimerService | ";
     MyBinder mBinder = new MyBinder();
-    int mMinutesForTimer;
-    long mMillisecondsTime;
+    long mMlsToFinish;
+    CountDownTimer cdt;
     Boolean runTimer = false;
 
     @Override
@@ -26,13 +26,14 @@ public class TimerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
-        mMinutesForTimer = intent.getIntExtra(MainActivity.KEY_PUT_MINUTES_TO_TIMER, 0);
+        mMlsToFinish = intent.getLongExtra(MainActivity.KEY_PUT_MLS_TO_TIMER, 0);
         return mBinder;
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
+        cdt.cancel();
         super.onDestroy();
     }
 
@@ -44,12 +45,14 @@ public class TimerService extends Service {
     }
 
     void startTimer() {
-        Log.d(TAG, "start ");
+        Log.d(TAG, "start " + mMlsToFinish);
         if (!runTimer) {
-            new CountDownTimer(15000, 1000) { //MinutesToMilliseconds(minutesForTimer)
+           cdt = new CountDownTimer(mMlsToFinish, 1000) { //MinutesToMilliseconds(minutesForTimer)
                 public void onTick(long millisUntilFinished) {
-                    sendBroadcast(new Intent(MainActivity.KEY_BDROADCAST_TICK).putExtra(MainActivity.KEY_MILLIS_UNTIL_FINISHED, millisUntilFinished));
-                    runTimer = true;
+
+                        sendBroadcast(new Intent(MainActivity.KEY_BDROADCAST_TICK).putExtra(MainActivity.KEY_MILLIS_UNTIL_FINISHED, millisUntilFinished));
+                        runTimer = true;
+
                 }
 
                 public void onFinish() {
@@ -60,9 +63,6 @@ public class TimerService extends Service {
         }
     }
 
-    private int MinutesToMilliseconds(int minutesForTimer) {
-        return minutesForTimer * 60000;
-    }
 
 
     class MyBinder extends Binder {

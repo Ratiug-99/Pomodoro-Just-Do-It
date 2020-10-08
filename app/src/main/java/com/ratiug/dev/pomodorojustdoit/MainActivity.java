@@ -1,6 +1,6 @@
 package com.ratiug.dev.pomodorojustdoit;
 
-import android.app.Notification;
+import android.app.ActivityManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -9,9 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,7 +17,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,12 +32,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "DBG | MainActivity | ";
     //KEY`s and ID`s
     public static String KEY_MILLIS_UNTIL_FINISHED = "KEY_MILLIS_UNTIL_FINISHED"; //Variable key to transmit milliseconds to finish every tick
-    public static String KEY_PUT_MINUTES_TO_TIMER = "KEY_PUT_MINUTES_TO_TIMER"; //Minutes to start timer
+    public static String KEY_PUT_MLS_TO_TIMER = "KEY_PUT_MINUTES_TO_TIMER"; //Minutes to start timer
     public static String KEY_SAVE_STATE_TIMER_TIME = "KEY_SAVE_STATE_TIMER_TIME";
     public static String KEY_BDROADCAST_TICK = "com.ratiug.dev.pomodorojustdoit_tick";
     public static String KEY_BDROADCAST_FINISH_TIMER = "com.ratiug.dev.pomodorojustdoit_finish_timer";
     //
-    long timeLeft;
+
     //
     DateFormat mDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.UK);
     ServiceConnection mServiceConn;
@@ -54,8 +50,11 @@ public class MainActivity extends AppCompatActivity {
     //View
     private TextView mTextViewTime;
     private Button mStartTimerBtn;
-    //temp var
-    int minutesForTimer = 25;
+    private Button mStopTimerButton;
+    //temp var//todo optimizecode
+    int minutesForTimerDefault = 1;
+    boolean isRunTimer = false;
+    long timeLeft = minutesForTimerDefault * 60000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         mDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         mTextViewTime = findViewById(R.id.tvTimer);
         mStartTimerBtn = findViewById(R.id.btnStart);
+        mStopTimerButton = findViewById(R.id.btnStop);
 
         mBroadcastReceiverTick = new BroadcastReceiver() {
             @Override
@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Log.d(TAG, "onReceive: FINISH + ");
+                isRunTimer = false;
                 finishTimer();
             }
         };
@@ -100,10 +101,27 @@ public class MainActivity extends AppCompatActivity {
         mStartTimerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startTimer();
+                if (isMyServiceRunning(TimerService.class)){
+                    Log.d(TAG, "onClickStartTimer: start");
+                    pauseTimer();
+                    // todo pause timer
+                } else {
+                    Log.d(TAG, "onClickStartTimer: stop");
+                    startTimer();
+                }
+            }
+        });
+
+        mStopTimerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopTimer();
             }
         });
     }
+
+
+
 
     private void RegisterReceiver() {
         registerReceiver(mFinishTimer, new IntentFilter(KEY_BDROADCAST_FINISH_TIMER));
@@ -116,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void finishTimer() {
+    private void finishTimer() { //todo optimizecode
         mPlayer = MediaPlayer.create(getApplicationContext(), R.raw.finish_work_timer);
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -125,14 +143,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mPlayer.start();
-        Toast.makeText(getApplicationContext(), "Complete", Toast.LENGTH_SHORT).show();
+        mStartTimerBtn.setText(R.string.start);
+        stopService(mIntent);
+        timeLeft = minutesForTimerDefault * 60000;
+
     }
 
     private void updateTimeToFinish(Intent intentFromBroadcast) {
         timeLeft = intentFromBroadcast.getLongExtra(KEY_MILLIS_UNTIL_FINISHED, 0);
+       setTimeText(timeLeft);
+    }
+
+    private void setTimeText(long mls){
         SimpleDateFormat formatter = new SimpleDateFormat("mm:ss", Locale.UK);
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date date = new Date(timeLeft);
+        Date date = new Date(mls);
         String timeToFinish = formatter.format(date);
         mTextViewTime.setText(timeToFinish);
         CreateNotificationConcentration(timeToFinish);
@@ -161,6 +186,16 @@ public class MainActivity extends AppCompatActivity {
         notificationManager.notify(ID_NOTIFY_TIMER, mBuilder.build());
     }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -174,19 +209,29 @@ public class MainActivity extends AppCompatActivity {
         super.onRestoreInstanceState(savedInstanceState);
     }
 
-    @Override
-    protected void onPause() {
-       // Log.d(TAG, "onPause: Unregister Receivers");
-     
-        super.onPause();
+    private void stopTimer() { //todo optimizecode
+        Log.d(TAG, "stopTimer");
+       // mTextViewTime.setText(R.string._25_00);
+        setTimeText(minutesForTimerDefault * 60000);
+        timeLeft = minutesForTimerDefault * 60000;
+        mStartTimerBtn.setText(R.string.start);
+        stopService(mIntent);
     }
 
-    private void startTimer() {
-        Log.d(TAG, "startTimer");
+    private void startTimer() { //todo optimizecode
+        Log.d(TAG, "startTimer " + timeLeft);
         RegisterReceiver();
-        mIntent = new Intent(this, TimerService.class).putExtra(KEY_PUT_MINUTES_TO_TIMER, minutesForTimer);
+        mIntent = new Intent(this, TimerService.class).putExtra(KEY_PUT_MLS_TO_TIMER, timeLeft);
         bindService(mIntent, mServiceConn, 0);
         startService(mIntent);
+        isRunTimer = true;
+        mStartTimerBtn.setText("Pause");
+    }
+
+    private void pauseTimer() { //todo optimizecode
+        stopService(mIntent);
+        mStartTimerBtn.setText("Start!");
+        Log.d(TAG, "pauseTimer: " );
     }
 
 }
