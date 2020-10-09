@@ -6,4 +6,6 @@
     <string name="settings">Settings</string>
     <string name="minutes_concentrate_timer">Minutes concentrate timer.</string>
     <string name="_25">25</string>
+    <string name="minutes_rest_timer">Minutes for rest timer</string>
+    <string name="_5">5</string>
 </resources>
