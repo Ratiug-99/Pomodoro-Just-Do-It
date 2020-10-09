@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTextViewTime;
     private Button mStartTimerBtn;
     private Button mStopTimerButton;
+    private Button mSettingsButton;
     //temp var//todo optimizecode
     int minutesForTimerDefault = 1;
     boolean isRunTimer = false;
@@ -65,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
         mTextViewTime = findViewById(R.id.tvTimer);
         mStartTimerBtn = findViewById(R.id.btnStart);
         mStopTimerButton = findViewById(R.id.btnStop);
+        mSettingsButton = findViewById(R.id.btnSettings);
+
 
         mBroadcastReceiverTick = new BroadcastReceiver() {
             @Override
@@ -116,6 +119,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 stopTimer();
+            }
+        });
+
+        mSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
+                startActivity(intent);
             }
         });
     }
