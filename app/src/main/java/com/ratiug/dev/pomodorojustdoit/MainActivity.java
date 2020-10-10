@@ -46,16 +46,16 @@ public class MainActivity extends AppCompatActivity {
     Intent mIntent;
     BroadcastReceiver mBroadcastReceiverTick;
     BroadcastReceiver mFinishTimer;
-    MediaPlayer mPlayer ;
+    MediaPlayer mPlayer;
+    //temp var//todo optimizecode
+    int minutesForTimerDefault;
+    boolean isRunTimer = false;
+    long timeLeft;
     //View
     private TextView mTextViewTime;
     private Button mStartTimerBtn;
     private Button mStopTimerButton;
     private Button mSettingsButton;
-    //temp var//todo optimizecode
-    int minutesForTimerDefault ; //todo need update when call;
-    boolean isRunTimer = false;
-    long timeLeft;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         mBroadcastReceiverTick = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-               // Log.d(TAG, "onReceive: TICK +");
+                // Log.d(TAG, "onReceive: TICK +");
                 updateTimeToFinish(intent);
             }
         };
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
         mStartTimerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isMyServiceRunning(TimerService.class)){
+                if (isMyServiceRunning(TimerService.class)) {
                     Log.d(TAG, "onClickStartTimer: start");
                     pauseTimer();
                     // todo pause timer
@@ -124,13 +124,11 @@ public class MainActivity extends AppCompatActivity {
         mSettingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
         });
     }
-
-
 
 
     private void RegisterReceiver() {
@@ -139,8 +137,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void UnRegisterReceiver() {
-            unregisterReceiver(mFinishTimer);
-            unregisterReceiver(mBroadcastReceiverTick);
+        unregisterReceiver(mFinishTimer);
+        unregisterReceiver(mBroadcastReceiverTick);
 
     }
 
@@ -161,10 +159,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateTimeToFinish(Intent intentFromBroadcast) {
         timeLeft = intentFromBroadcast.getLongExtra(KEY_MILLIS_UNTIL_FINISHED, 0);
-       setTimeText(timeLeft);
+        setTimeText(timeLeft);
     }
 
-    private void setTimeText(long mls){
+    private void setTimeText(long mls) {
         SimpleDateFormat formatter = new SimpleDateFormat("mm:ss", Locale.UK);
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date date = new Date(mls);
@@ -221,11 +219,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopTimer() { //todo optimizecode
         Log.d(TAG, "stopTimer");
-       // mTextViewTime.setText(R.string._25_00);
-        setTimeText(minutesForTimerDefault * 60000);
-        timeLeft = minutesForTimerDefault * 60000;
+        if (isMyServiceRunning(TimerService.class)) {
+            stopService(mIntent);
+        }
+        isRunTimer = false;
+        updateDefaultTimeConcentrate();
         mStartTimerBtn.setText(R.string.start);
-        stopService(mIntent);
+
+
     }
 
     private void startTimer() { //todo optimizecode
@@ -241,14 +242,14 @@ public class MainActivity extends AppCompatActivity {
     private void pauseTimer() { //todo optimizecode
         stopService(mIntent);
         mStartTimerBtn.setText("Start!");
-        Log.d(TAG, "pauseTimer: " );
+        Log.d(TAG, "pauseTimer: ");
     }
 
-   private void updateDefaultTimeConcentrate(){
-       final SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+    private void updateDefaultTimeConcentrate() {
+        final SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
         minutesForTimerDefault = Integer.parseInt(sharedPreferencesHelper.getMinutesConcentrate());
-       Log.d(TAG, "updateDefaultTimeConcentrate: " + isRunTimer);
-        if(!isRunTimer){
+        Log.d(TAG, "updateDefaultTimeConcentrate: " + isRunTimer);
+        if (!isRunTimer) {
             timeLeft = minutesForTimerDefault * 60000;
             setTimeText(timeLeft);
         }
