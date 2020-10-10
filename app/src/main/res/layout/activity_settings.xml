@@ -29,7 +29,6 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:inputType="number"
-        android:longClickable="false"
         android:maxLength="2"
         android:text="@string/_25"/>
 
@@ -54,7 +53,6 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:maxLength="2"
-        android:longClickable="false"
         android:inputType="number"
         android:text="@string/_5"/>
 

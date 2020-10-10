@@ -53,13 +53,13 @@ public class MainActivity extends AppCompatActivity {
     private Button mStopTimerButton;
     private Button mSettingsButton;
     //temp var//todo optimizecode
-    int minutesForTimerDefault = 1;
+    int minutesForTimerDefault ; //todo need update when call;
     boolean isRunTimer = false;
-    long timeLeft = minutesForTimerDefault * 60000;
+    long timeLeft;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -67,12 +67,11 @@ public class MainActivity extends AppCompatActivity {
         mStartTimerBtn = findViewById(R.id.btnStart);
         mStopTimerButton = findViewById(R.id.btnStop);
         mSettingsButton = findViewById(R.id.btnSettings);
-
-
+        updateDefaultTimeConcentrate();
         mBroadcastReceiverTick = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "onReceive: TICK +");
+               // Log.d(TAG, "onReceive: TICK +");
                 updateTimeToFinish(intent);
             }
         };
@@ -245,4 +244,27 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "pauseTimer: " );
     }
 
+   private void updateDefaultTimeConcentrate(){
+       final SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
+        minutesForTimerDefault = Integer.parseInt(sharedPreferencesHelper.getMinutesConcentrate());
+       Log.d(TAG, "updateDefaultTimeConcentrate: " + isRunTimer);
+        if(!isRunTimer){
+            timeLeft = minutesForTimerDefault * 60000;
+            setTimeText(timeLeft);
+        }
+    }
+
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume");
+        updateDefaultTimeConcentrate();
+        super.onResume();
+    }
 }
