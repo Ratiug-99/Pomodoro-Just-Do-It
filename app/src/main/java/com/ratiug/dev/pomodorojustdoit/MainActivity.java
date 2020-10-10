@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     public static String KEY_MILLIS_UNTIL_FINISHED = "KEY_MILLIS_UNTIL_FINISHED"; //Variable key to transmit milliseconds to finish every tick
     public static String KEY_PUT_MLS_TO_TIMER = "KEY_PUT_MINUTES_TO_TIMER"; //Minutes to start timer
     public static String KEY_SAVE_STATE_TIMER_TIME = "KEY_SAVE_STATE_TIMER_TIME";
+    public static String KEY_SAVE_TIMER_IF_RUN = "KEY_SAVE_TIMER_IF_RUN";
     public static String KEY_BDROADCAST_TICK = "com.ratiug.dev.pomodorojustdoit_tick";
     public static String KEY_BDROADCAST_FINISH_TIMER = "com.ratiug.dev.pomodorojustdoit_finish_timer";
     //
@@ -67,11 +68,10 @@ public class MainActivity extends AppCompatActivity {
         mStartTimerBtn = findViewById(R.id.btnStart);
         mStopTimerButton = findViewById(R.id.btnStop);
         mSettingsButton = findViewById(R.id.btnSettings);
-        updateDefaultTimeConcentrate();
         mBroadcastReceiverTick = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                // Log.d(TAG, "onReceive: TICK +");
+                 Log.d(TAG, "onReceive: TICK +");
                 updateTimeToFinish(intent);
             }
         };
@@ -207,18 +207,26 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putString(KEY_SAVE_STATE_TIMER_TIME, mTextViewTime.getText().toString());
+        outState.putLong(KEY_SAVE_STATE_TIMER_TIME, timeLeft);
+        if (isMyServiceRunning(TimerService.class)){
+            Log.d(TAG, "onSaveInstanceState: +");
+            outState.putBoolean(KEY_SAVE_TIMER_IF_RUN,true);
+        }
         super.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        mTextViewTime.setText(savedInstanceState.getString(KEY_SAVE_STATE_TIMER_TIME));
+        setTimeText(savedInstanceState.getLong(KEY_SAVE_STATE_TIMER_TIME));
+        if (savedInstanceState.getBoolean(KEY_SAVE_TIMER_IF_RUN)) {
+            startTimer();
+            Log.d(TAG, "onRestoreInstanceState: +");
+        }
         super.onRestoreInstanceState(savedInstanceState);
     }
 
     private void stopTimer() { //todo optimizecode
-        Log.d(TAG, "stopTimer");
+        Log.d(TAG, "stopTimer " + isRunTimer);
         if (isMyServiceRunning(TimerService.class)) {
             stopService(mIntent);
         }
@@ -248,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateDefaultTimeConcentrate() {
         final SharedPreferencesHelper sharedPreferencesHelper = new SharedPreferencesHelper(this);
         minutesForTimerDefault = Integer.parseInt(sharedPreferencesHelper.getMinutesConcentrate());
-        Log.d(TAG, "updateDefaultTimeConcentrate: " + isRunTimer);
+        Log.d(TAG, "updateDefaultTimeConcentrate: run timer" + isRunTimer);
         if (!isRunTimer) {
             timeLeft = minutesForTimerDefault * 60000;
             setTimeText(timeLeft);
@@ -264,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume");
+        Log.d(TAG, "onResume service start - " + isMyServiceRunning(SettingsActivity.class));
         updateDefaultTimeConcentrate();
         super.onResume();
     }
