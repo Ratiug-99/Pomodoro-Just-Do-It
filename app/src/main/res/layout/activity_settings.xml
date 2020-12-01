@@ -34,11 +34,34 @@
 
 
     <TextView
+        android:id="@+id/tv_minutes_short_rest_timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:text="@string/minutes_short_rest_timer" />
+    <TextView
+        android:id="@+id/tv_error_short_minutes_rest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:textColor="@color/red"
+        tools:text="error"/>
+
+    <EditText
+        android:id="@+id/et_minutes_short_rest_timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:maxLength="2"
+        android:inputType="number"
+        android:text="@string/_5"/>
+
+    <TextView
         android:id="@+id/tv_minutes_rest_timer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:text="@string/minutes_rest_timer" />
+        android:text="@string/minutes_long_rest_timer" />
     <TextView
         android:id="@+id/tv_error_minutes_rest"
         android:layout_width="wrap_content"
