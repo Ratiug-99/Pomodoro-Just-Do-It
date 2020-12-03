@@ -11,14 +11,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class SettingsActivity extends AppCompatActivity {
     private static final String TAG = "DBG | SA" ;
 
  //   private int mMinutesForConcentrate,mMinutesForRest;
-    private EditText etMinutesForWork, etMinutesForRest;
-    private TextView errorWorkMinutes,errorRestMinutes;
+    private EditText etMinutesForWork, etMinutesForShortRest, etMinutesForLongRest;
+    private TextView errorWorkMinutes, errorShortRestMinutes, errorLongRestMinutes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,17 +26,20 @@ public class SettingsActivity extends AppCompatActivity {
         final SharedPreferencesHelper sph = new SharedPreferencesHelper(this);
 
         etMinutesForWork = findViewById(R.id.et_minutes_concentrate_timer);
-        etMinutesForRest = findViewById(R.id.et_minutes_rest_timer);
+        etMinutesForShortRest = findViewById(R.id.et_minutes_short_rest_timer);
+        etMinutesForLongRest = findViewById(R.id.et_minutes_rest_long_timer);
         etMinutesForWork.setText(sph.getMinutesConcentrate());
-        etMinutesForRest.setText(sph.getMinutesRst());
-        if (sph.getMinutesConcentrate().isEmpty() || sph.getMinutesRst().isEmpty()){
+        etMinutesForShortRest.setText(sph.getMinutesShortRest());
+        etMinutesForLongRest.setText(sph.getMinutesLongRest());
+        if (sph.getMinutesConcentrate().isEmpty() || sph.getMinutesShortRest().isEmpty()){
             Log.d(TAG, "onCreate: ");
         }
         else {
             Log.d(TAG, "onCreate: noempty");
         }
-        errorRestMinutes = findViewById(R.id.tv_error_minutes_rest);
+        errorShortRestMinutes = findViewById(R.id.tv_error_minutes_short_rest);
         errorWorkMinutes = findViewById(R.id.tv_error_minutes_concentrate);
+        errorLongRestMinutes = findViewById(R.id.tv_error_minutes_long_rest);
 
         etMinutesForWork.addTextChangedListener(new TextWatcher() {
             @Override
@@ -58,7 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
         });
-        etMinutesForRest.addTextChangedListener(new TextWatcher() {
+        etMinutesForShortRest.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -71,11 +73,29 @@ public class SettingsActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if(isValidateValue(editable,etMinutesForRest,errorRestMinutes));
-                    sph.setMinutesRest(editable.toString());
+                if(isValidateValue(editable, etMinutesForShortRest, errorShortRestMinutes));
+                    sph.setMinutesShortRest(editable.toString());
+            }
+        });
+        etMinutesForLongRest.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if(isValidateValue(editable, etMinutesForLongRest, errorLongRestMinutes));
+                    sph.setMinutesLongRest(editable.toString());
             }
         });
     }
+
 
     private Boolean isValidateValue(Editable editable, EditText editText, TextView tvError) {
         String regexStr = "^[0-9]*$";

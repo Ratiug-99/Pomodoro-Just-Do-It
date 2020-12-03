@@ -40,7 +40,7 @@
         android:textSize="16sp"
         android:text="@string/minutes_short_rest_timer" />
     <TextView
-        android:id="@+id/tv_error_short_minutes_rest"
+        android:id="@+id/tv_error_minutes_short_rest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
@@ -57,13 +57,13 @@
         android:text="@string/_5"/>
 
     <TextView
-        android:id="@+id/tv_minutes_rest_timer"
+        android:id="@+id/tv_minutes_long_rest_timer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:text="@string/minutes_long_rest_timer" />
     <TextView
-        android:id="@+id/tv_error_minutes_rest"
+        android:id="@+id/tv_error_minutes_long_rest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
@@ -71,7 +71,7 @@
         tools:text="error"/>
 
     <EditText
-        android:id="@+id/et_minutes_rest_timer"
+        android:id="@+id/et_minutes_rest_long_timer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
